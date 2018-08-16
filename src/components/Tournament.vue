@@ -10,13 +10,14 @@
                 </v-card-media>
             </v-flex>
             <v-flex xs12>
-                <v-card-title primary-title>
+                <v-card-text class="card-text">
                     <div>
-                        <h3 class="headline mb-0">{{tournament.name|capitalize}} #{{currentRound.number}}</h3>
-                        <p> {{currentPrize|round(2)}} </p>
-                        <p> {{timeRemaining}} </p>
+                        <h3 class="headline">{{tournament.name|capitalize}} #{{currentRound.number}}</h3>
+                        <div class="tournement_attr"> <v-icon class="icon">attach_money</v-icon> ${{currentPrize|money}} </div>
+                        <div class="tournement_attr"> <v-icon class="icon">timer</v-icon> {{timeRemaining}} </div>
+                        <div class="tournement_attr"> <v-icon class="icon">people</v-icon> {{currentPartcipants}} </div>
                     </div>
-                </v-card-title>
+                </v-card-text>
                 <v-card-actions class="actions">
                     <v-spacer></v-spacer>
                     <v-btn flat color="grey">VIEW DETAILS</v-btn>
@@ -39,21 +40,22 @@ export default {
         return {
             currentRound: '',
             usdPrice: Number,
-            timeRemaining: ''
+            timeRemaining: '',
+            currentPartcipants: '',
         }
     },
     methods: {
         initializeClock(endtime) {
             const vm = this
             const timeinterval = setInterval(function(){
-                var t = vm.getTimeRemaining(endtime);
+                var t = vm._getTimeRemaining(endtime);
                 vm.timeRemaining = `${t.days}d ${t.hours}h ${t.minutes}m ${t.seconds}s`
                 if(t.total <= 0) {
                   clearInterval(timeinterval);
                 }
             },1000);
         },
-        getTimeRemaining(endtime) {
+        _getTimeRemaining(endtime) {
             const t = Date.parse(endtime) - Date.parse(new Date());
             const seconds = Math.floor( (t/1000) % 60 );
             const minutes = Math.floor( (t/1000/60) % 60 );
@@ -67,6 +69,13 @@ export default {
                 'seconds': seconds
             }
         },
+        _compare(a, b) {
+            if (a.number < b.number)
+                return 1;
+            if (a.number > b.number)
+                return -1;
+            return 0;
+        }
     },
     computed: {
         currentPrize() {
@@ -74,14 +83,9 @@ export default {
         },
     },
     mounted() {
-        const compare = (a,b) => {
-            if (a.number < b.number)
-                return 1;
-            if (a.number > b.number)
-                return -1;
-            return 0;
-        }
-        this.currentRound = this.tournament.rounds.sort(compare)[0]
+        this.currentRound = this.tournament.rounds.sort(this._compare)[0]
+        console.log(this.currentRound)
+        this.currentPartcipants = `${this.currentRound.stakes}/${this.currentRound.participants}`
         // console.log(this.currentRound)
         axios.get('https://api.coinmarketcap.com/v1/ticker/numeraire/?convert=USD')
         .then(({data}) => {
@@ -109,7 +113,23 @@ export default {
         position:absolute;
         bottom: 0;
         width: 85.7%;
+        height:45px;
         align-self: flex-end;
         background-color: #f7f7f7;
+    }
+    .countdown {
+        vertical-align: middle;
+    }
+    .card-text {
+
+    }
+    .headline {
+        margin-bottom: 10px;
+    }
+    .icon {
+        vertical-align: middle;
+    }
+    .tournement_attr {
+        margin-bottom:5px;
     }
 </style>

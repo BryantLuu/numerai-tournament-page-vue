@@ -13,14 +13,13 @@
                 <v-btn flat>Community</v-btn>
                 <v-btn flat>Telegram</v-btn>
                 <v-btn icon>
-                  <v-icon>more_vert</v-icon>
+                  <v-icon>timer</v-icon>
                 </v-btn>
             </v-toolbar-items>
             <v-spacer></v-spacer>
             <span class="usdPrice">1 NMR ≈ ${{usdPrice|round(2)}}</span>
-
-                <v-btn >Log in</v-btn>
-                <v-btn >Sign up</v-btn>
+            <v-btn >Log in</v-btn>
+            <v-btn >Sign up</v-btn>
         </v-toolbar>
         <v-content>
             <router-link to="/about">About</router-link>

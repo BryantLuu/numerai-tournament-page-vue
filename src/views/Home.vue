@@ -1,6 +1,6 @@
 <template>
     <v-container fluid>
-        <v-layout justify-center row wrap>
+        <v-layout justify-center>
             <v-flex xs12 sm6>
                 <tournament
                     v-for="tournament, index in tournaments"
@@ -11,10 +11,11 @@
             </v-flex>
             <v-flex xs12 sm3 offset-sm1>
                 <v-card class="card">
-                    <v-card-title primary-title>
-                        <h4 class="">Welcome to Numerai</h4>
+                    <v-card-text>
+                        <h4 class="text-xs-center">Welcome to Numerai</h4>
+                        <p> </p>
                         <div>
-                            <v-btn>SIGN UP</v-btn>
+                            <v-btn block>SIGN UP</v-btn>
                             Already have an account? <a href="">Login</a>
                             <ul class="with-bullets">
                                 <li> New to Numerai? Learn how it works </li>
@@ -22,18 +23,18 @@
                                 <li> Read the FAQs </li>
                             </ul>
                         </div>
-                    </v-card-title>
+                    </v-card-text>
                 </v-card>
                 <v-card class="card">
                     <v-card-title primary-title>
                         <table>
                             <thead>
-                                OPEN ROUNDS
+                                <v-icon class="icon">timeline</v-icon> OPEN ROUNDS
                             </thead>
                             <tbody>
                                 <tr>
                                     <td>Total Prize Pool</td>
-                                    <td>$$</td>
+                                    <td>${{totalPrizePool|money}}</td>
                                 </tr>
                                 <tr>
                                     <td>Total Stakes</td>
@@ -55,11 +56,6 @@
 <script>
 import axios from 'axios'
 import Tournament from '../components/Tournament'
-const images = [
-    'https://source.unsplash.com/400x300/weekly?code+1120',
-    'https://source.unsplash.com/400x300/weekly?code+2120',
-    'https://source.unsplash.com/400x300/weekly?code+3120'
-]
 
 export default {
     name: 'Home',
@@ -69,12 +65,22 @@ export default {
     data () {
         return {
             tournaments: [],
-            totalPricePool: '',
+            totalPrizePool: '',
             totalStakes: '',
             totalSubmission: '',
         }
     },
+    methods: {
+        _compare(a, b) {
+            if (a.number < b.number)
+                return 1;
+            if (a.number > b.number)
+                return -1;
+            return 0;
+        }
+    },
     mounted() {
+        const vm = this
         axios.post('https://api-tournament.numer.ai/', {
             query: `
               query {
@@ -101,7 +107,15 @@ export default {
             `
         })
         .then(({data}) => {
-            this.tournaments = data.data.tournaments
+            vm.tournaments = data.data.tournaments
+            const firstTournement = this.tournaments[0]
+            const latestRound = firstTournement.rounds.sort(this._compare)[0]
+            axios.get('https://api.coinmarketcap.com/v1/ticker/numeraire/?convert=USD')
+            .then(({data}) => {
+                vm.totalPrizePool = latestRound.prizePoolNmr *  data[0].price_usd * 5
+            })
+
+
         })
     }
 
@@ -111,24 +125,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h1, h2 {
-  font-weight: normal;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
 .card {
     margin-top: 20px
-}
-.with-bullets {
-    list-style:circle
 }
 </style>
